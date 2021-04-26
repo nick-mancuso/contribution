@@ -12,6 +12,9 @@
       Some other checks are commented out to speed up execution time.
   -->
 
+  <!-- haltOnException is required for exception fixes and reporting of all exceptions -->
+  <property name="haltOnException" value="false"/>
+
   <metadata name="com.atlas-sw.eclipse" value="I like Sydney"/>
 
   <property name="severity" value="ignore"/>
@@ -298,11 +301,6 @@
     <module name="IllegalType"/>
     <module name="InnerAssignment"/>
     <module name="MagicNumber"/>
-    <module name="MatchXpath">
-      <property name="query"
-                value="//LITERAL_CATCH//METHOD_CALL[.//IDENT[@text = 'printStackTrace']]/.."/>
-      <message key="matchxpath.match" value="Avoid using 'printStackTrace'."/>
-    </module>
     <module name="MissingCtor"/>
     <module name="MissingSwitchDefault"/>
     <module name="ModifiedControlVariable"/>
@@ -479,7 +477,6 @@
     </module>
     <module name="AbstractClassName"/>
     <module name="ClassTypeParameterName"/>
-    <module name="RecordTypeParameterName"/>
     <module name="ConstantName"/>
     <module name="InterfaceTypeParameterName"/>
     <module name="LocalFinalVariableName"/>
@@ -497,7 +494,6 @@
       <property name="format" value="^(id)|([a-z][a-z0-9][a-zA-Z0-9]+)$"/>
       <property name="ignoreOverridden" value="true"/>
     </module>
-    <module name="PatternVariableName"/>
     <module name="LambdaParameterName">
       <property name="format" value="^(id)|([a-z][a-z0-9][a-zA-Z0-9]+)$"/>
     </module>
@@ -508,8 +504,6 @@
       <property name="format" value="^(id)|([a-z][a-z0-9][a-zA-Z0-9]+)$"/>
     </module>
     <module name="TypeName"/>
-    <module name="IllegalIdentifierName"/>
-    <module name="RecordComponentName"/>
 
     <!-- Regexp -->
     <module name="Regexp"/>
@@ -526,14 +520,12 @@
     <module name="ExecutableStatementCount">
         <property name="max" value="30"/>
     </module>
-    <module name="LambdaBodyLength"/>
     <module name="MethodCount">
       <property name="maxTotal" value="35"/>
     </module>
     <module name="MethodLength"/>
     <module name="OuterTypeNumber"/>
     <module name="ParameterNumber"/>
-    <module name="RecordComponentNumber"/>
 
     <!-- Whitespace -->
     <module name="EmptyForInitializerPad"/>

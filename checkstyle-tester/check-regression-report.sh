@@ -5,12 +5,21 @@
 ################ SETUP ##################
 checkstyle_tester_dir=$(pwd)
 #Set your checkstyle directory below
-checkstyle_directory=${HOME}/checkstyle/checkstyle
+checkstyle_directory=${HOME}/development/checkstyle
 #Set desired output directory below 
-output_dir=${HOME}/checkstyle/reports_logs
+output_dir=${HOME}/reports_logs
 #Set desired directory with configs below
-config_directory=${HOME}/checkstyle/configs/split-check-files
+config_directory=${checkstyle_tester_dir}/split-check-files
 ##########################################
+
+echo "checkstyle_tester_dir:"
+echo ${checkstyle_tester_dir}
+echo "checkstyle_directory:"
+echo ${checkstyle_directory}
+echo "output_dir:"
+echo ${output_dir}
+echo "config_directory:"
+echo ${config_directory}
 
 #Set time variable for tracking report and log generation
 time=`date '+%Y_%m_%d'`;
