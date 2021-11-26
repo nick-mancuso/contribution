@@ -20,6 +20,17 @@ function checkout_from {
 
 case $1 in
 
+update-settings-xml)
+  MVN_SETTINGS=${TRAVIS_HOME}/.m2/settings.xml
+  if [[ -f ${MVN_SETTINGS} ]]; then
+    if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      sed -i'' -e "/<mirrors>/,/<\/mirrors>/ d" $MVN_SETTINGS
+    else
+      xmlstarlet ed --inplace -d "//mirrors" $MVN_SETTINGS
+    fi
+  fi
+  ;;
+
 releasenotes-builder)
   cd releasenotes-builder
   mvn clean verify
@@ -29,14 +40,6 @@ releasenotes-builder)
 patch-diff-report-tool)
   cd patch-diff-report-tool
   mvn clean install
-  ;;
-
-checkstyle-tester-launch-groovy)
-  checkout_from https://github.com/checkstyle/checkstyle
-  cd .ci-temp/checkstyle
-  mvn --batch-mode clean install -Passembly
-  cd ../../checkstyle-tester
-  groovy launch.groovy -l projects-for-travis.properties -c my_check.xml -i
   ;;
 
 checkstyle-tester-diff-groovy-patch)
@@ -69,10 +72,40 @@ checkstyle-tester-diff-groovy-patch-only)
     -pc my_check.xml -p patch-branch -r ../.ci-temp/checkstyle -m single
   ;;
 
+checkstyle-tester-diff-groovy-regression-single)
+  # Check out lateset checkstyle from master
+  rm -rf .ci-temp
+  checkout_from https://github.com/checkstyle/checkstyle
+
+  # Run report from master branch of contribution
+  checkout_from https://github.com/checkstyle/contribution
+  cd .ci-temp/contribution/checkstyle-tester
+  sed -i'' 's/^guava/#guava/' projects-to-test-on.properties
+  sed -i'' 's/#checkstyle|/checkstyle|/' projects-to-test-on.properties
+  export MAVEN_OPTS="-Xmx2048m"
+  groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
+    -pc ../../../checkstyle-tester/diff-groovy-regression-config.xml \
+    -r ../../checkstyle -xm "-Dcheckstyle.failsOnError=false" \
+    -m single -p master
+
+  # Run report with current branch
+  cd ../../../checkstyle-tester/
+  sed -i'' 's/^guava/#guava/' projects-to-test-on.properties
+  sed -i'' 's/#checkstyle|/checkstyle|/' projects-to-test-on.properties
+  rm -rf reports repositories
+  groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
+    -pc diff-groovy-regression-config.xml -r ../.ci-temp/checkstyle/ \
+    -m single -p master -xm "-Dcheckstyle.failsOnError=false"
+
+  cd ..
+  # We need to ignore file paths below, since they will be different between reports
+  diff -I "contribution" checkstyle-tester/reports/diff/checkstyle/index.html \
+    .ci-temp/contribution/checkstyle-tester/reports/diff/checkstyle/index.html
+  ;;
+
 codenarc)
   cd checkstyle-tester
-  ./codenarc.sh . diff.groovy > diff.log && cat diff.log && grep '(p1=0; p2=0; p3=0)' diff.log
-  ./codenarc.sh . launch.groovy > launch.log && cat launch.log && grep '(p1=0; p2=11; p3=1)' launch.log
+  ./codenarc.sh . diff.groovy > diff.log && cat diff.log && grep '(p1=0; p2=13; p3=17)' diff.log
   ;;
 
 markdownlint)

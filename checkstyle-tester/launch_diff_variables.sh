@@ -7,7 +7,8 @@
 
 CONTACTSERVER=true
 
-PULL_REMOTE=origin
+PULL_REMOTE=remotes/origin
+
 
 CHECKSTYLE_DIR=~/development/checkstyle
 SEVNTU_DIR=~/development/sevntu.checkstyle

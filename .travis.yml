@@ -1,18 +1,38 @@
+version: ~> 1.0
+dist: focal
+# this arch is required as is for Partner Queue Solution - DO NOT MODIFY
+arch: ppc64le
+
 language: java
 sudo: false
 
-# until https://github.com/checkstyle/contribution/issues/534
-# install:
-#   - gem install mdl
+cache:
+  apt: true
+  directories:
+  - ~/.m2
+
+addons:
+  apt:
+    packages:
+      - xmlstarlet
+      - ruby
+      - groovy
+      - ant-optional
+
+branches:
+  only:
+    - master
+
+install:
+  - gem install mdl
 
 matrix:
   fast_finish: true
   include:
-    # until https://github.com/checkstyle/contribution/issues/534
-    # - jdk: openjdk8
-    #   env:
-    #     - DESC="markdown lint"
-    #     - CMD="./.ci/travis.sh markdownlint"
+    - jdk: openjdk8
+      env:
+        - DESC="markdown lint"
+        - CMD="./.ci/travis.sh markdownlint"
 
     - jdk: openjdk8
       env:
@@ -23,11 +43,6 @@ matrix:
       env:
         - DESC="patch-diff-report-tool"
         - CMD="./.ci/travis.sh patch-diff-report-tool"
-
-    - jdk: openjdk8
-      env:
-        - DESC="checkstyle-tester (launch.groovy) on linux"
-        - CMD="./.ci/travis.sh checkstyle-tester-launch-groovy"
 
     - jdk: openjdk8
       env:
@@ -44,30 +59,22 @@ matrix:
         - DESC="checkstyle-tester (diff.groovy) on linux with enabled patchOnly"
         - CMD="./.ci/travis.sh checkstyle-tester-diff-groovy-patch-only"
 
-    # disabled till https://github.com/checkstyle/contribution/issues/448
-    # - jdk: openjdk8
-    #   env:
-    #     - DESC="codenarc validation for groovy files"
-    #     - CMD="./.ci/travis.sh codenarc"
+    - jdk: openjdk8
+      env:
+        - DESC="codenarc validation for groovy files"
+        - CMD="./.ci/travis.sh codenarc"
 
-addons:
-  apt:
-    packages:
-      - xmlstarlet
-      - ruby
+
+before_script:
+    - |
+      if [[ $TRAVIS_CPU_ARCH == 'ppc64le' ]]; then
+          export JAVA_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-ppc64el
+          export PATH=$JAVA_HOME/bin:$PATH
+      fi
+    - groovy --version
 
 script:
-  - xmlstarlet ed --inplace -d "//mirrors" /home/travis/.m2/settings.xml
-  - |
-    set -e
-    eval $CMD
+  - ./.ci/travis.sh update-settings-xml
+  - eval $CMD
 
 after_success:
-
-cache:
-  directories:
-  - ~/.m2
-
-branches:
-  only:
-    - master
