@@ -27,11 +27,29 @@ static void main(String[] args) {
             }
 
             def checkstyleBaseReportInfo = null
-            if (cfg.isDiffMode()) {
-                checkstyleBaseReportInfo = launchCheckstyleReport(cfg.checkstyleToolBaseConfig)
-            }
+            def threads = []
 
-            def checkstylePatchReportInfo = launchCheckstyleReport(cfg.checkstyleToolPatchConfig)
+            def thread1 = new Thread() {
+                @Override
+                public void run() {
+                    if (cfg.isDiffMode()) {
+                        checkstyleBaseReportInfo = launchCheckstyleReport(cfg.checkstyleToolBaseConfig)
+                    }
+                }
+            }
+            threads << thread1
+
+            def checkstylePatchReportInfo = null
+            def thread2 = new Thread() {
+                @Override
+                public void run() {
+                    checkstylePatchReportInfo = launchCheckstyleReport(cfg.checkstyleToolPatchConfig)
+                }
+            }
+            threads << thread2
+
+            threads.each { it.run() }
+            threads.each { it.join() }
 
             if (checkstylePatchReportInfo) {
                 deleteDir(cfg.reportsDir)
