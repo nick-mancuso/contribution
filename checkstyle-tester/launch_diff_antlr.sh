@@ -75,23 +75,23 @@ function launch {
 		while read line ; do
 			[[ "$line" == \#* ]] && continue # Skip lines with comments
 			[[ -z "$line" ]] && continue     # Skip empty lines
-			
+
 			REPO_NAME=`echo $line | cut -d '|' -f 1`
 			REPO_TYPE=`echo $line | cut -d '|' -f 2`
 			REPO_URL=` echo $line | cut -d '|' -f 3`
 			COMMIT_ID=`echo $line | cut -d '|' -f 4`
 			EXCLUDES=` echo $line | cut -d '|' -f 5`
-			
+
 			echo "Running Launches on $REPO_NAME ..."
 
 			if [ ! -d "$REPOSITORIES_DIR" ]; then
 				mkdir $REPOSITORIES_DIR
 			fi
 			REPO_SOURCES_DIR=
-			
+
 			if [ "$REPO_TYPE" == "git" ]; then
 				GITPATH=$REPOSITORIES_DIR/$REPO_NAME
-				
+
 				if [ ! -d "$GITPATH" ]; then
 					echo "Cloning $REPO_TYPE repository '${REPO_NAME}' ..."
 					git clone $REPO_URL $GITPATH
@@ -111,8 +111,8 @@ function launch {
 					cd $GITPATH
 					if $CONTACTSERVER ; then
 						git fetch origin
+						git reset --hard origin/master
 					fi
-					git reset --hard origin/master
 					git clean -f -d
 					cd -
 				fi
@@ -210,10 +210,11 @@ if $USE_CUSTOM_MASTER ; then
 else
 	if $CONTACTSERVER ; then
 		git fetch origin
+		git reset --hard HEAD
+		git checkout origin/master
+	else
+		git checkout master
 	fi
-
-	git reset --hard HEAD
-	git checkout origin/master
 fi
 
 git clean -f -d
@@ -264,8 +265,10 @@ echo "</head><body>" >> $OUTPUT_FILE
 
 if $USE_CUSTOM_MASTER ; then
 	REMOTE="$PULL_REMOTE/$CUSTOM_MASTER"
+elif $CONTACTSERVER ; then
+    REMOTE="origin/master"
 else
-	REMOTE="origin/master"
+	REMOTE="master"
 fi
 
 cd $CHECKSTYLE_DIR
